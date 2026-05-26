@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model Company {
+  id              String    @id @default(cuid())
+  name            String
+  pageId          String    @unique
+  pageAccessToken String
+  systemPrompt    String    @default("You are a helpful customer support assistant.")
+  messageCount    Int       @default(0)
+  messageLimit    Int       @default(500)
+  isActive        Boolean   @default(true)
+  plan            String    @default("free")
+  subscriptionStatus  String    @default("active")
+  subscriptionStart   DateTime? 
+  subscriptionEnd     DateTime?
+  contactEmail    String?
+  createdAt       DateTime  @default(now())
+  users           User[]
+}
+
+model User {
+  id        String    @id @default(cuid())
+  psid      String
+  companyId String
+  company   Company   @relation(fields: [companyId], references: [id])
+  createdAt DateTime  @default(now())
+  messages  Message[]
+
+  @@unique([psid, companyId])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  text      String
+  role      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}

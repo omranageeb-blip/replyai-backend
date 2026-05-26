@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReplyAI — تسجيل الدخول</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f1a;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+    }
+    .logo { text-align: center; margin-bottom: 32px; }
+    .logo h1 { font-size: 28px; color: #6c63ff; }
+    .logo p { color: #888; font-size: 14px; margin-top: 6px; }
+    .tabs {
+      display: flex;
+      background: #0f0f1a;
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 28px;
+    }
+    .tab {
+      flex: 1; padding: 10px; text-align: center;
+      border-radius: 8px; cursor: pointer;
+      font-size: 14px; color: #888; transition: all 0.2s;
+    }
+    .tab.active { background: #6c63ff; color: #fff; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-size: 13px; color: #aaa; margin-bottom: 8px; }
+    input {
+      width: 100%; padding: 12px 16px;
+      background: #0f0f1a; border: 1px solid #2a2a4a;
+      border-radius: 10px; color: #fff; font-size: 15px;
+      outline: none; transition: border 0.2s;
+    }
+    input:focus { border-color: #6c63ff; }
+    button {
+      width: 100%; padding: 14px; background: #6c63ff;
+      color: #fff; border: none; border-radius: 10px;
+      font-size: 16px; cursor: pointer; transition: opacity 0.2s; margin-top: 8px;
+    }
+    button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .error {
+      background: #2a1a1a; border: 1px solid #ff4444;
+      color: #ff6666; padding: 12px; border-radius: 8px;
+      font-size: 13px; margin-bottom: 16px; display: none;
+    }
+    .success {
+      background: #1a2a1a; border: 1px solid #44ff44;
+      color: #66ff66; padding: 12px; border-radius: 8px;
+      font-size: 13px; margin-bottom: 16px; display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <h1>⚡ ReplyAI</h1>
+      <p>مساعد Messenger الذكي للأعمال</p>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('login')">تسجيل الدخول</div>
+      <div class="tab" onclick="switchTab('register')">إنشاء حساب</div>
+    </div>
+
+    <div id="error" class="error"></div>
+    <div id="success" class="success"></div>
+
+    <div id="login-form">
+      <div class="form-group">
+        <label>البريد الإلكتروني</label>
+        <input type="email" id="login-email" placeholder="admin@business.com">
+      </div>
+      <div class="form-group">
+        <label>كلمة المرور</label>
+        <input type="password" id="login-password" placeholder="••••••••">
+      </div>
+      <button onclick="login()" id="login-btn">دخول</button>
+    </div>
+
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label>البريد الإلكتروني</label>
+        <input type="email" id="reg-email" placeholder="admin@business.com">
+      </div>
+      <div class="form-group">
+        <label>كلمة المرور (8 أحرف على الأقل)</label>
+        <input type="password" id="reg-password" placeholder="••••••••">
+      </div>
+      <button onclick="register()" id="reg-btn">إنشاء حساب</button>
+    </div>
+  </div>
+
+  <script>
+    if (localStorage.getItem('token')) window.location.href = '/dashboard.html';
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('active', (i === 0) === (tab === 'login'));
+      });
+      document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+      document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
+      hideMessages();
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('error');
+      el.textContent = msg; el.style.display = 'block';
+      document.getElementById('success').style.display = 'none';
+    }
+
+    function showSuccess(msg) {
+      const el = document.getElementById('success');
+      el.textContent = msg; el.style.display = 'block';
+      document.getElementById('error').style.display = 'none';
+    }
+
+    function hideMessages() {
+      document.getElementById('error').style.display = 'none';
+      document.getElementById('success').style.display = 'none';
+    }
+
+    async function login() {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      const btn = document.getElementById('login-btn');
+      if (!email || !password) return showError('أدخل البريد وكلمة المرور');
+      btn.disabled = true; btn.textContent = 'جارٍ الدخول...';
+      try {
+        const res = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('email', data.email);
+        window.location.href = '/dashboard.html';
+      } catch (err) {
+        showError(err.message || 'فشل تسجيل الدخول');
+        btn.disabled = false; btn.textContent = 'دخول';
+      }
+    }
+
+    async function register() {
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
+      const btn = document.getElementById('reg-btn');
+      if (!email || !password) return showError('أدخل البريد وكلمة المرور');
+      if (password.length < 8) return showError('كلمة المرور 8 أحرف على الأقل');
+      btn.disabled = true; btn.textContent = 'جارٍ الإنشاء...';
+      try {
+        const res = await fetch('/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('email', data.email);
+        window.location.href = '/dashboard.html';
+      } catch (err) {
+        showError(err.message || 'فشل إنشاء الحساب');
+        btn.disabled = false; btn.textContent = 'إنشاء حساب';
+      }
+    }
+
+    document.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const activeTab = document.querySelector('.tab.active').textContent;
+        if (activeTab === 'تسجيل الدخول') login(); else register();
+      }
+    });
+  </script>
+</body>
+</html>
