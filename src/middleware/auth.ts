@@ -1,18 +1,16 @@
-import { verifyToken } from "../services/authService";
+import jwt from "jsonwebtoken";
 
 export async function authMiddleware(req: any, reply: any) {
-  const authHeader = req.headers["authorization"];
+  const token = req.headers.authorization?.split(" ")[1];
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return reply.status(401).send({ error: "Unauthorized — token required" });
+  if (!token) {
+    return reply.status(401).send({ error: "No token" });
   }
 
-  const token = authHeader.split(" ")[1];
-
   try {
-    const decoded = verifyToken(token);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
     req.admin = decoded;
   } catch {
-    return reply.status(401).send({ error: "Unauthorized — invalid token" });
+    return reply.status(401).send({ error: "Invalid token" });
   }
 }

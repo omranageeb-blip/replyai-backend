@@ -8,37 +8,43 @@ datasource db {
 }
 
 model Admin {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String    @id @default(cuid())
+  email        String    @unique
   passwordHash String
-  createdAt    DateTime @default(now())
+  createdAt    DateTime  @default(now())
+  companies    Company[]
 }
 
 model Company {
-  id              String    @id @default(cuid())
-  name            String
-  pageId          String    @unique
-  pageAccessToken String
-  systemPrompt    String    @default("You are a helpful customer support assistant.")
-  messageCount    Int       @default(0)
-  messageLimit    Int       @default(500)
-  isActive        Boolean   @default(true)
-  plan            String    @default("free")
-  subscriptionStatus  String    @default("active")
-  subscriptionStart   DateTime? 
-  subscriptionEnd     DateTime?
-  contactEmail    String?
-  createdAt       DateTime  @default(now())
-  users           User[]
+  id                 String   @id @default(cuid())
+  name               String
+  pageId             String   @unique
+  pageAccessToken    String
+  systemPrompt       String   @default("You are a helpful assistant.")
+  plan               String   @default("free")
+  messageCount       Int      @default(0)
+  messageLimit       Int     @default(200)
+  isActive           Boolean  @default(true)
+
+  subscriptionStatus String   @default("active")
+  subscriptionStart  DateTime?
+  subscriptionEnd    DateTime?
+
+  contactEmail       String?
+  adminId            String
+  admin              Admin    @relation(fields: [adminId], references: [id])
+
+  users              User[]
+  createdAt          DateTime @default(now())
 }
 
 model User {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   psid      String
   companyId String
-  company   Company   @relation(fields: [companyId], references: [id])
-  createdAt DateTime  @default(now())
+  company   Company  @relation(fields: [companyId], references: [id])
   messages  Message[]
+  createdAt DateTime @default(now())
 
   @@unique([psid, companyId])
 }

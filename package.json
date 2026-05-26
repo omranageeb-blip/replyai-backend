@@ -1,37 +1,23 @@
 {
-  "name": "replyai-backend",
-  "version": "1.0.0",
-  "main": "dist/server.js",
+  "name": "replyai",
   "scripts": {
     "dev": "ts-node-dev src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js"
   },
   "dependencies": {
-    "@fastify/static": "^6.12.0",
-    "@prisma/client": "^5.22.0",
-    "axios": "^1.16.1",
-    "bcryptjs": "^3.0.3",
-    "crypto": "^1.0.1",
-    "dotenv": "^16.6.1",
-    "fastify": "^4.29.1",
-    "jsonwebtoken": "^9.0.3",
-    "node-cron": "^4.2.1",
-    "nodemailer": "^8.0.8",
-    "prisma": "^5.22.0"
+    "@prisma/client": "^5.0.0",
+    "axios": "^1.6.0",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.0.0",
+    "fastify": "^4.0.0",
+    "jsonwebtoken": "^9.0.0",
+    "prisma": "^5.0.0"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.9.1",
-    "@types/node-cron": "^3.0.11",
-    "@types/nodemailer": "^8.0.0",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.9.3"
-  },
-  "description": "",
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs"
+    "typescript": "^6.0.3"
+  }
 }
