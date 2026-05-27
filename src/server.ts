@@ -31,29 +31,44 @@ app.get("/webhook", async (req: any, reply: any) => {
 });
 
 // WEBHOOK
-app.post("/webhook", async (req: any) => {
+app.post("/webhook", async (req: any, reply: any) => {
   const body = req.body;
 
   const pageId = body.entry?.[0]?.id;
   const msg = body.entry?.[0]?.messaging?.[0];
 
-  if (!msg) return;
+  if (!msg) {
+    return reply.send({ ok: true });
+  }
 
-  const psid = msg.sender.id;
-  const text = msg.message.text;
+  const psid = msg.sender?.id;
+  const text = msg.message?.text;
+
+  if (!psid || !text) {
+    return reply.send({ ok: true });
+  }
 
   const company = await prisma.company.findUnique({
     where: { pageId },
   });
 
-  if (!company) return;
+  if (!company) {
+    return reply.send({ ok: true });
+  }
 
-  const reply = await askAI([
-    { role: "system", content: company.systemPrompt },
-    { role: "user", content: text },
-  ]);
+  try {
+    const replyText = await askAI([
+      { role: "system", content: company.systemPrompt },
+      { role: "user", content: text },
+    ]);
 
-  await sendMessage(psid, reply, company.pageAccessToken);
+    await sendMessage(psid, replyText, company.pageAccessToken);
+
+    return reply.send({ ok: true });
+  } catch (err) {
+    console.log("❌ webhook error:", err);
+    return reply.status(500).send({ ok: false });
+  }
 });
 
 const start = async () => {
